@@ -17,17 +17,12 @@ Jonathan
 $recipients = (get-content $EmailList) | ForEach-Object { $_.Trim() }
 
 foreach ($recipient in $recipients){
-	$recipient
 	$Email = [PSCustomObject]@{
 	   to = @($recipient)
 	   sender = $EmailSender
 	   subject = $EmailSubject
 	   text_body = $EmailBody
 	} | ConvertTo-JSON -Compress
-	
-	$Email
-	
-
 
 	$headers=@{}
 	$headers.Add("accept", "application/json")
@@ -35,8 +30,8 @@ foreach ($recipient in $recipients){
 	$headers.Add("X-Smtp2go-Api-Key", $Smtp2goAPIKey)
 
 	$response = Invoke-WebRequest -Uri 'https://api.smtp2go.com/v3/email/send' -Method POST -Headers $headers -Body $Email
-
-    if ($response.success) {
+	
+    if (($response.content | convertfrom-json).data.succeeded -eq "1") {
         Write-Host "Email sent successfully to $recipient!"
     } else {
         Write-Host "Failed to send email to $recipient. Error: $($response.data.error)"
